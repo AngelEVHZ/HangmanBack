@@ -1,0 +1,30 @@
+service: &service
+  name: hangman
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  stage: dev
+  environment:
+    USRV_STAGE: ${self:provider.stage}
+custom:
+  service: *service
+  webpack:
+    packager: "npm"
+    includeModules:
+      forceInclude:
+        - jsonpath
+      forceExclude:
+        - aws-sdk
+plugins:
+  - serverless-webpack
+
+package:
+  individually: true
+  excludeDevDependencies: true
+  exclude:
+    - "src/handler/*.LICENSE"
+
+functions:
+  hello:
+    handler: src/functions/hello/handler.main
