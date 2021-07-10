@@ -1,14 +1,22 @@
 {
   "extends": "./tsconfig.paths.json",
   "compilerOptions": {
+    "experimentalDecorators": true,
     "lib": ["ESNext"],
     "moduleResolution": "node",
     "noUnusedLocals": true,
+    "module": "commonjs",
     "noUnusedParameters": true,
     "removeComments": true,
     "sourceMap": true,
     "target": "ES2020",
-    "outDir": "lib"
+    "outDir": "lib",
+    "paths": {
+      "gateway/*":["src/gateway/*"],
+      "constant/*":["src/constant/*"],
+      "service/*":["src/service/*"],
+      "infraestructure/*":["src/infraestructure/*"],
+    }
   },
   "include": ["src/**/*.ts", "serverless.ts"],
   "exclude": [
@@ -22,3 +30,4 @@
     "require": ["tsconfig-paths/register"]
   }
 }
+
