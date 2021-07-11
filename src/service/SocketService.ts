@@ -36,7 +36,8 @@ export class SocketService implements ISocketService {
             userSession.host = true;
         
         }
-        const dynamoResponse = await this._dynamo.put(userSession, "table");
+        console.log("INSERT", userSession, process.env.USER_SESSION_TABLE);
+        const dynamoResponse = await this._dynamo.put(userSession, process.env.USER_SESSION_TABLE);
         console.log("dynamo response", dynamoResponse);
         return {statusCode:200, body: JSON.stringify(userSession)};
     }
