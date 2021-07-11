@@ -16,7 +16,8 @@
     "inversify": "^5.1.1",
     "reflect-metadata": "^0.1.13",
     "sinon-chai": "^3.7.0",
-    "source-map-support": "^0.5.19"
+    "source-map-support": "^0.5.19",
+    "ts-mockery": "^1.2.0"
   },
   "devDependencies": {
     "@serverless/typescript": "^2.23.0",

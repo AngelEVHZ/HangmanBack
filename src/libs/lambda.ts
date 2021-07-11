@@ -1,6 +1,8 @@
-import middy from "@middy/core"
-import middyJsonBodyParser from "@middy/http-json-body-parser"
-
-export const middyfy = (handler) => {
-  return middy(handler).use(middyJsonBodyParser())
+export const JSON_BODY_MIDDLEWARE = (event) => {
+  if (event.body){
+    console.log("ENTRO");
+    event.body = JSON.parse(event.body);
+    console.log("ENTROTAMBIEN",event.body);
+  }
 }
+

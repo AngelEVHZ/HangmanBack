@@ -1,3 +1,5 @@
+import { IAPIGatewayEvent } from "libs/apiGateway";
+
 export interface IHelloService {
-    hello(): string;
+    hello(event: IAPIGatewayEvent<any>): {statusCode: number; body: string;}
 }

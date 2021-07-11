@@ -27,4 +27,6 @@ package:
 
 functions:
   hello:
-    handler: src/functions/hello/handler.main
+    handler: src/handler/HelloHandler.main
+  connect:
+    handler: src/handler/ConnecHandler.main
