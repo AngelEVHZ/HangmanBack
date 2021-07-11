@@ -18,7 +18,6 @@ custom:
         - aws-sdk
 plugins:
   - serverless-webpack
-
 package:
   individually: true
   excludeDevDependencies: true
@@ -28,5 +27,7 @@ package:
 functions:
   hello:
     handler: src/handler/HelloHandler.main
+  connectSession:
+    handler: src/handler/ConnectSessionHandler.main
   connect:
-    handler: src/handler/ConnecHandler.main
+    handler: src/handler/ConnectHandler.main

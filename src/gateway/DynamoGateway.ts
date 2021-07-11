@@ -2,7 +2,7 @@ import { inject, injectable } from "inversify";
 import "reflect-metadata";
 import { IDynamoGateway } from "../infraestructure/IDynamoGateway";
 import { DocumentClient, PutItemInput, PutItemInputAttributeMap, ScanInput, ScanOutput } from "aws-sdk/clients/dynamodb";
-import IDENTIFIERS from "constant/Identifiers";
+import IDENTIFIERS from "../constant/Identifiers";
 
 
 @injectable()
@@ -23,7 +23,7 @@ export class DynamoGateway implements IDynamoGateway {
             await this._client.put(params).promise();
             return true;
         } catch (error) {
-            console.log("ERROR ->", error);
+            console.log("DynamoGateway ERROR", error);
         }
         return false;
     }
@@ -48,7 +48,7 @@ export class DynamoGateway implements IDynamoGateway {
             }
             return items;
         } catch (error) {
-            console.log("ERROR", error);
+            console.log("DynamoGateway ERROR", error);
         }
         return [];
     }

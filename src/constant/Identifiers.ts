@@ -3,6 +3,7 @@ export type containerSymbol = {
     DynamoGateway: symbol;
     DocumentClient: symbol;
     SocketService: symbol;
+    SocketGateway: symbol;
 }
 
 const IDENTIFIERS: containerSymbol = {
@@ -10,6 +11,7 @@ const IDENTIFIERS: containerSymbol = {
     DynamoGateway: Symbol("DynamoGateway"),
     DocumentClient: Symbol("DocumentClient"),
     SocketService: Symbol("SocketService"),
+    SocketGateway: Symbol("SocketGateway"),
 };
 
 export default IDENTIFIERS;

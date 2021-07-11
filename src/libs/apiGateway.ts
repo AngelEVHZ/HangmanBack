@@ -57,6 +57,7 @@ resource: string;
 
 export interface IRequestContext {
 connectionId: string;
+routeKey: string;
 eventType: "CONNECT" | "MESSAGE" | "DISCONNECT";
 domainName: string;
 stage: string;
