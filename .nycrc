@@ -5,10 +5,11 @@
     ".ts"
   ],
   "include": [
-    "**/*.js",
-    "**/*.ts"
+    "src/gateway/**/*.ts",
+    "src/service/**/*.ts"
   ],
   "exclude": [
+    "src/constant/**",
     "coverage/**",
     "node_modules/**",
     "**/*.d.ts",
