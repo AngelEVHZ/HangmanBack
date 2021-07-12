@@ -13,6 +13,8 @@ import { ISocketGateway } from "../infraestructure/ISocketGateway";
 import { SocketGateway } from "../gateway/SocketGateway";
 import { NotifyResponse } from "../types/NotifyResponse";
 import { NotifyActionEnum } from "../constant/NotifyActionEnum";
+import { DocumentClient} from "aws-sdk/clients/dynamodb";
+import { DynamoIndexEnum, DynamoTableEnum } from "../constant/TableEnum";
 
 
 @injectable()
@@ -29,6 +31,20 @@ export class SocketService implements ISocketService {
     public async Connect(event: IAPIGatewayWebSocketEvent): Promise<GenericResponse> {
         console.log("ON CONECTED", event);
         return { statusCode: 200, body: "OK conected" };
+    }
+    public async Disconnect(event: IAPIGatewayWebSocketEvent): Promise<GenericResponse> {
+        console.log("ON Disconnect", event);
+        const socketId = get(event, "requestContext.connectionId");
+        try {
+            if (socketId) {
+               const response =  await this._dynamo.delete(DynamoIndexEnum.SOCKET_ID, socketId, DynamoTableEnum.USER_SESSION);
+                if (!response) throw ErrorEnum.E003;
+            }
+        } catch (error) {
+            console.log("Disconnect FINAL ERROR", error);
+            return ERRORS[error];
+        }
+        return { statusCode: 200, body: "OK Disconnect" };
     }
     public async ConneconnectSessionct(event: IAPIGatewayWebSocketEvent<SocketAction<CreateSessionRequest>>): Promise<GenericResponse> {
         console.log("ON ConneconnectSessionct", event);
@@ -48,7 +64,7 @@ export class SocketService implements ISocketService {
                 userSession.host = true;
             }
             console.log("INSERT", userSession);
-            const dynamoResponse = await this._dynamo.put(userSession, process.env.USER_SESSION_TABLE);
+            const dynamoResponse = await this._dynamo.put(userSession, DynamoTableEnum.USER_SESSION);
             if (!dynamoResponse) throw ErrorEnum.E003;
 
             const notified = userSession.host ? await this._newSessionCreated(userSession) :
@@ -64,7 +80,7 @@ export class SocketService implements ISocketService {
     }
 
     private _generateGameId(): string {
-        return "game_id" + Math.random();
+        return Math.random().toString(36).substring(2, 8) + Math.random().toString(36).substring(2, 8);
     }
 
     private async _newSessionCreated(userSession: UserSession) {
@@ -75,8 +91,32 @@ export class SocketService implements ISocketService {
         return await this._socket.sendMessage<UserSession>(userSession.socketId, notify);
     }
     private async _newUserJoined(userSession: UserSession) {
-        console.log(userSession);
+        console.log("QUERY",userSession);
+        const conectedUsers:UserSession[] = await this._dynamo.query<UserSession>(this._queryByGameId(userSession.gameId));
+        console.log("CONECTED USERS",conectedUsers);
+        
+        const notify: NotifyResponse<any> = {
+            action: NotifyActionEnum.USER_JOIN,
+            data: conectedUsers,
+        }
+        for (let user of conectedUsers) {
+            await this._socket.sendMessage<any>(user.socketId, notify);
+        }
         return true;
+    }
+
+    private _queryByGameId(gameId: string): DocumentClient.QueryInput {
+        return {
+            ExpressionAttributeNames:{
+                "#gameId":"gameId"
+            },
+            ExpressionAttributeValues: {
+                ":gameId": gameId,
+            },
+            IndexName: DynamoIndexEnum.GAME_ID,
+            TableName: DynamoTableEnum.USER_SESSION,
+            KeyConditionExpression: "#gameId = :gameId",
+        };
     }
 }
 

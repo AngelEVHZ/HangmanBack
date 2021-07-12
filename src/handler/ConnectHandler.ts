@@ -5,7 +5,7 @@ import 'source-map-support/register';
 
 const CORE:ISocketService = CONTAINER.get<ISocketService>(IDENTIFIERS.SocketService);
 const handler = async (event) => {
-    console.log("EVENT",event);    
+    console.log("INPUT",event);    
     return CORE.Connect(event);
   }
 export const main = handler;

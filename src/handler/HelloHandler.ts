@@ -6,7 +6,7 @@ import { JSON_BODY_MIDDLEWARE } from '../libs/lambda';
 
 const CORE:IHelloService = CONTAINER.get<IHelloService>(IDENTIFIERS.HelloService);
 const handler = async (event) => {
-    console.log("EVENT",event);
+    console.log("INPUT",event);
     JSON_BODY_MIDDLEWARE(event);
     
     return CORE.hello(event);

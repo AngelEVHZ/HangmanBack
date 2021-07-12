@@ -1,7 +1,7 @@
 import { inject, injectable } from "inversify";
 import "reflect-metadata";
 import { IDynamoGateway } from "../infraestructure/IDynamoGateway";
-import { DocumentClient, PutItemInput, PutItemInputAttributeMap, ScanInput, ScanOutput } from "aws-sdk/clients/dynamodb";
+import { DocumentClient, PutItemInput, PutItemInputAttributeMap} from "aws-sdk/clients/dynamodb";
 import IDENTIFIERS from "../constant/Identifiers";
 
 
@@ -13,7 +13,24 @@ export class DynamoGateway implements IDynamoGateway {
         this._client = client;
     }
 
+    public async delete(key: string, value: string, table: string): Promise<boolean> {
+        const params: DocumentClient.DeleteItemInput = {
+            TableName: table,
+            Key: {
+                [key]: value
+            }
+        }
+        try {
+            await this._client.delete(params).promise();
+            return true;
+        } catch (error) {
+            console.log("DynamoGateway ERROR", error);
+        }
+        return false;
+    }
+
     public async put(data: object, table: string, condition?: string): Promise<boolean> {
+        console.log("DYNAMO PUT", data, table);
         const params: PutItemInput = {
             Item: <PutItemInputAttributeMap>data,
             TableName: table
@@ -28,9 +45,9 @@ export class DynamoGateway implements IDynamoGateway {
         return false;
     }
 
-    public async scan<T = object>(scanInput: ScanInput): Promise<T[]> {
-        let scanResponse = await this._scan(scanInput);
+    public async scan<T = object>(scanInput: DocumentClient.ScanInput): Promise<T[]> {
         try {
+            let scanResponse = await this._scan(scanInput);
             const items = [];
             scanResponse.Items.forEach((item) => {
                 items.push(item);
@@ -53,8 +70,29 @@ export class DynamoGateway implements IDynamoGateway {
         return [];
     }
 
-    private async _scan(scanInput: ScanInput): Promise<ScanOutput> {
+    public async query<T = object>(queryInput: DocumentClient.QueryInput): Promise<T[]> {
+        console.log("DYNAMO QUERY", queryInput);
+        try {
+            let response = await this._query(queryInput);
+            const items = [];
+            response.Items.forEach((item) => {
+                items.push(item);
+            });
+
+            console.log("query", response);
+            return items;
+        } catch (error) {
+            console.log("DynamoGateway ERROR", error);
+        }
+        return [];
+    }
+
+    private async _scan(scanInput: DocumentClient.ScanInput): Promise<DocumentClient.ScanOutput> {
         return await this._client.scan(scanInput).promise();
+    }
+
+    private async _query(queryInput: DocumentClient.QueryInput): Promise<DocumentClient.QueryOutput> {
+        return await this._client.query(queryInput).promise();
     }
 
 

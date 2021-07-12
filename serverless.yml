@@ -31,3 +31,5 @@ functions:
     handler: src/handler/ConnectSessionHandler.main
   connect:
     handler: src/handler/ConnectHandler.main
+  disconnect:
+    handler: src/handler/DisconnectHandler.main
