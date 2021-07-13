@@ -14,6 +14,7 @@ export class DynamoGateway implements IDynamoGateway {
     }
 
     public async delete(key: string, value: string, table: string): Promise<boolean> {
+        console.log("DYNAMO DELETE", key, value, table);
         const params: DocumentClient.DeleteItemInput = {
             TableName: table,
             Key: {
@@ -27,6 +28,24 @@ export class DynamoGateway implements IDynamoGateway {
             console.log("DynamoGateway ERROR", error);
         }
         return false;
+    }
+
+    public async getItem<T>(key: string, value: string, table: string): Promise<T> {
+        console.log("DYNAMO GETITEM", key, value, table);
+        const params: DocumentClient.GetItemInput = {
+            TableName: table,
+            Key: {
+                [key]: value
+            }
+        }
+        try {
+            const item = await this._client.get(params).promise();
+            console.log("ITEM", item);
+            return item.Item as T;
+        } catch (error) {
+            console.log("DynamoGateway ERROR", error);
+        }
+        return null;
     }
 
     public async put(data: object, table: string, condition?: string): Promise<boolean> {

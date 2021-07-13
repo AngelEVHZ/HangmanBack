@@ -31,5 +31,11 @@ functions:
     handler: src/handler/ConnectSessionHandler.main
   connect:
     handler: src/handler/ConnectHandler.main
+  notifyAll:
+    handler: src/handler/NotifyAllHandler.main
+  notifyHost:
+    handler: src/handler/NotifyHostHandler.main
+  notifyPlayers:
+    handler: src/handler/NotifyPlayersHandler.main
   disconnect:
     handler: src/handler/DisconnectHandler.main

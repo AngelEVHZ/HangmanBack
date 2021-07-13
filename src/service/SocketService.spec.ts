@@ -5,12 +5,12 @@ import CONTAINER from "../constant/Container";
 import { IAPIGatewayWebSocketEvent } from "../libs/apiGateway";
 import { Mock } from "ts-mockery";
 import { ISocketService } from "infraestructure/ISocketService";
-import { CreateSessionRequest, SocketAction } from "types/SocketAction";
+import { CreateSessionRequest, NotifyAll, NotifyHost, SocketAction } from "types/SocketAction";
 import { SocketActionEnum } from "constant/SocketActionEnum";
 import { DynamoGateway } from "gateway/DynamoGateway";
 import { SocketGateway } from "gateway/SocketGateway";
 import * as sinonChai from "sinon-chai";
-import { UserSession } from "types/UserSession";
+import { NotifyActionEnum } from "constant/NotifyActionEnum";
 use(sinonChai)
 
 describe("SocketService", () => {
@@ -21,6 +21,7 @@ describe("SocketService", () => {
     let socketNotifyStub: SinonStub;
     let dynamoQueryStub: SinonStub;
     let dynamoDeleteStub: SinonStub;
+    let dynamoGetStub: SinonStub;
 
     beforeEach(() => {
         box = createSandbox();
@@ -29,7 +30,16 @@ describe("SocketService", () => {
         dynamoDeleteStub = box.stub().returns(true);
         socketNotifyStub = box.stub().returns(true);
 
-        const userConected: UserSession[] = [
+        dynamoGetStub = box.stub().returns(
+            {
+                socketId: "socketId",
+                gameId: "gameId",
+                nickName: "nickName",
+                host: false,
+                conected: 0
+            }
+        );
+        dynamoQueryStub = box.stub().returns([
             {
                 socketId: "socketId",
                 gameId: "gameId",
@@ -41,13 +51,12 @@ describe("SocketService", () => {
                 socketId: "socketId2",
                 gameId: "gameId",
                 nickName: "nickName2",
-                host: false,
+                host: true,
                 conected: 0
             }
-        ];
-        dynamoQueryStub = box.stub().returns(userConected);
+        ]);
         event = Mock.of<IAPIGatewayWebSocketEvent<SocketAction<CreateSessionRequest>>>({
-            requestContext:{connectionId:"conection-id"},
+            requestContext: { connectionId: "conection-id" },
             body: {
                 action: SocketActionEnum.CONNECT_SESSION,
                 data: {
@@ -71,8 +80,8 @@ describe("SocketService", () => {
             sendMessage: socketNotifyStub,
         }));
         service = CONTAINER.get<ISocketService>(IDENTIFIERS.SocketService);
-        const response = await service.ConneconnectSessionct(event);
-        console.log("FINAL RESPONSE",response);
+        const response = await service.ConneconnectSession(event);
+        console.log("FINAL RESPONSE", response);
         expect(response.statusCode).to.be.equal(200);
         expect(response.body).to.be.equal("success");
 
@@ -90,39 +99,124 @@ describe("SocketService", () => {
             sendMessage: socketNotifyStub,
         }));
         service = CONTAINER.get<ISocketService>(IDENTIFIERS.SocketService);
-        event.body.data.gameId = "gameid";
-        const response = await service.ConneconnectSessionct(event);
-        console.log("FINAL RESPONSE",response);
+        event.body.data.gameId = "111111111111";
+        const response = await service.ConneconnectSession(event);
+        console.log("FINAL RESPONSE", response);
         expect(response.statusCode).to.be.equal(200);
         expect(response.body).to.be.equal("success");
-
         expect(dynamoPutStub).to.have.been.calledOnce;
+        expect(dynamoQueryStub).to.have.been.calledOnce;
+        expect(socketNotifyStub).to.have.been.callCount(3);
+    });
+
+
+    it("Test connect, succes", async () => {
+        const event = Mock.of<IAPIGatewayWebSocketEvent>({
+            requestContext: { connectionId: "conection-id" },
+        });
+        service = CONTAINER.get<ISocketService>(IDENTIFIERS.SocketService);
+        const response = await service.Connect(event);
+        console.log("FINAL RESPONSE", response);
+        expect(response.body).to.be.equal("OK conected");
+    });
+
+    it("Test NotifyAll, succes", async () => {
+        const event = Mock.of<IAPIGatewayWebSocketEvent<SocketAction<NotifyAll>>>({
+            requestContext: { connectionId: "conection-id" },
+            body: {
+                action: SocketActionEnum.NOTIFY_ALL,
+                data: {
+                    gameId: "111111111111",
+                    notification: {},
+                    action: NotifyActionEnum.NOTIFY_ALL,
+                }
+            }
+        });
+        CONTAINER.rebind(IDENTIFIERS.DynamoGateway).toConstantValue(Mock.of<DynamoGateway>({
+            query: dynamoQueryStub,
+        }));
+        CONTAINER.rebind(IDENTIFIERS.SocketGateway).toConstantValue(Mock.of<SocketGateway>({
+            sendMessage: socketNotifyStub,
+        }));
+
+        service = CONTAINER.get<ISocketService>(IDENTIFIERS.SocketService);
+        const response = await service.NotifyAll(event);
+        console.log("FINAL RESPONSE", response);
+        expect(response.body).to.be.equal("OK NotifyAll");
         expect(dynamoQueryStub).to.have.been.calledOnce;
         expect(socketNotifyStub).to.have.been.callCount(2);
     });
 
-    it("Test connect, succes", async () => {
-        const event = Mock.of<IAPIGatewayWebSocketEvent>({
-            requestContext:{connectionId:"conection-id"},
+    it("Test NotifyPlayers, succes", async () => {
+        const event = Mock.of<IAPIGatewayWebSocketEvent<SocketAction<NotifyAll>>>({
+            requestContext: { connectionId: "conection-id" },
+            body: {
+                action: SocketActionEnum.NOTIFY_PLAYERS,
+                data: {
+                    gameId: "111111111111",
+                    notification: {},
+                    action: NotifyActionEnum.NOTIFY_PLAYERS,
+                }
+            }
         });
+        CONTAINER.rebind(IDENTIFIERS.DynamoGateway).toConstantValue(Mock.of<DynamoGateway>({
+            query: dynamoQueryStub,
+        }));
+        CONTAINER.rebind(IDENTIFIERS.SocketGateway).toConstantValue(Mock.of<SocketGateway>({
+            sendMessage: socketNotifyStub,
+        }));
+
         service = CONTAINER.get<ISocketService>(IDENTIFIERS.SocketService);
-        const response = await service.Connect(event);
-        console.log("FINAL RESPONSE",response);
-        expect(response.body).to.be.equal("OK conected");
+        const response = await service.NotifyPlayers(event);
+        console.log("FINAL RESPONSE", response);
+        expect(response.body).to.be.equal("OK NotifyPlayers");
+        expect(dynamoQueryStub).to.have.been.calledOnce;
+        expect(socketNotifyStub).to.have.been.callCount(1);
+    });
+
+    it("Test NotifyHost, succes", async () => {
+        const event = Mock.of<IAPIGatewayWebSocketEvent<SocketAction<NotifyHost>>>({
+            requestContext: { connectionId: "conection-id" },
+            body: {
+                action: SocketActionEnum.NOTIFY_HOST,
+                data: {
+                    socketId: "111111111111",
+                    notification: {},
+                    action: NotifyActionEnum.NOTIFY_HOST,
+                }
+            }
+        });
+        CONTAINER.rebind(IDENTIFIERS.SocketGateway).toConstantValue(Mock.of<SocketGateway>({
+            sendMessage: socketNotifyStub,
+        }));
+
+        service = CONTAINER.get<ISocketService>(IDENTIFIERS.SocketService);
+        const response = await service.NotifyHost(event);
+        console.log("FINAL RESPONSE", response);
+        expect(response.body).to.be.equal("OK NotifyHost");
+        expect(socketNotifyStub).to.have.been.callCount(1);
     });
 
     it("Test disconnect, succes", async () => {
         CONTAINER.rebind(IDENTIFIERS.DynamoGateway).toConstantValue(Mock.of<DynamoGateway>({
             delete: dynamoDeleteStub,
+            getItem: dynamoGetStub,
+            query: dynamoQueryStub,
+        }));
+        CONTAINER.rebind(IDENTIFIERS.SocketGateway).toConstantValue(Mock.of<SocketGateway>({
+            sendMessage: socketNotifyStub,
         }));
         const event = Mock.of<IAPIGatewayWebSocketEvent>({
-            requestContext:{connectionId:"conection-id"},
+            requestContext: { connectionId: "conection-id" },
         });
         service = CONTAINER.get<ISocketService>(IDENTIFIERS.SocketService);
         const response = await service.Disconnect(event);
-        console.log("FINAL RESPONSE",response);
+        console.log("FINAL RESPONSE", response);
         expect(response.body).to.be.equal("OK Disconnect");
         expect(dynamoDeleteStub).to.have.been.calledOnce;
+        expect(dynamoGetStub).to.have.been.calledOnce;
+        expect(dynamoQueryStub).to.have.been.calledOnce;
+        expect(socketNotifyStub).to.have.been.callCount(2);
     });
 
 });

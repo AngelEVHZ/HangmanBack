@@ -27,12 +27,11 @@ describe("HelloSerive", () => {
         CONTAINER.restore();
     });
 
-    it("Test hello, succes", (done: Mocha.Done) => {
+    it("Test hello, succes", () => {
         service = CONTAINER.get<IHelloService>(IDENTIFIERS.HelloService);
         const response = service.hello(event);
         const expectedResponse = {statusCode: 200, body: JSON.stringify("hola angel")};
         expect(response).to.be.deep.equal(expectedResponse);
-        done();
     });
 
 });

@@ -5,4 +5,5 @@ export interface IDynamoGateway {
     scan<T = object>(scanInput: DocumentClient.ScanInput): Promise<T[]>;
     query<T = object>(queryInput: DocumentClient.QueryInput): Promise<T[]>;
     delete(key: string, value: string, table: string): Promise<boolean>;
+    getItem<T = object>(key: string, value: string, table: string): Promise<T>;
 }

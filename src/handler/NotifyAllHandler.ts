@@ -9,6 +9,6 @@ const handler = async (event) => {
     console.log("INPUT",event);
     JSON_BODY_MIDDLEWARE(event);
     
-    return CORE.ConneconnectSession(event);
+    return CORE.NotifyAll(event);
   }
 export const main = handler;
