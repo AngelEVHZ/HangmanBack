@@ -13,9 +13,10 @@ import { ISocketGateway } from "../infraestructure/ISocketGateway";
 import { SocketGateway } from "../gateway/SocketGateway";
 import { NotifyResponse } from "../types/NotifyResponse";
 import { NotifyActionEnum } from "../constant/NotifyActionEnum";
-import { DocumentClient } from "aws-sdk/clients/dynamodb";
 import { DynamoIndexEnum, DynamoTableEnum } from "../constant/TableEnum";
 import { MAX_PLAYERS, CODE_SIZE } from "../constant/GameLogic";
+import { Utils } from "../constant/Utils";
+
 @injectable()
 export class SocketService implements ISocketService {
     private readonly _dynamo: IDynamoGateway;
@@ -63,13 +64,15 @@ export class SocketService implements ISocketService {
                 nickName: event.body.data.nickName,
                 host: false,
                 conected: Date.now(),
+                playerId: Utils.generateId(3)
             };
+
             if (!userSession.gameId) {
-                userSession.gameId = this._generateGameId();
+                userSession.gameId = Utils.generateId(6);
                 userSession.host = true;
                 const dynamoResponse = await this._dynamo.put(userSession, DynamoTableEnum.USER_SESSION);
                 if (!dynamoResponse) throw ErrorEnum.E003;
-                const notified = await this._notifyUser(userSession.socketId, NotifyActionEnum.SESSION_CREATED, userSession)
+                const notified = await this._notifyUser(userSession.socketId, NotifyActionEnum.SESSION_CREATED, Utils.parseArrayToUserResponse([userSession]))
                 if (!notified) throw ErrorEnum.E003;
             } else {
                 if (userSession.gameId.length != CODE_SIZE) {
@@ -77,13 +80,15 @@ export class SocketService implements ISocketService {
                 }
                 const conectedUsers: UserSession[] = await this._getUsersInGame(userSession.gameId);
                 if (conectedUsers.length >= MAX_PLAYERS) throw ErrorEnum.E004;
-                if (!this._getHost(conectedUsers)) {
+                if (!Utils.getHost(conectedUsers)) {
                     throw ErrorEnum.E005;
                 }
                 const dynamoResponse = await this._dynamo.put(userSession, DynamoTableEnum.USER_SESSION);
                 if (!dynamoResponse) throw ErrorEnum.E003;
                 conectedUsers.push(userSession);
-                const notified = await this._notifyUsers(conectedUsers, NotifyActionEnum.USER_JOIN, conectedUsers);
+                const notified = await this._notifyUsers(conectedUsers,
+                    NotifyActionEnum.USER_JOIN,
+                    Utils.parseArrayToUserResponse(conectedUsers));
                 if (!notified) throw ErrorEnum.E003;
             }
         } catch (error) {
@@ -132,24 +137,12 @@ export class SocketService implements ISocketService {
         try {
             this._validateGameId(get(event, "body.data.gameId", ""));
             const conectedUsers: UserSession[] = await this._getUsersInGame(event.body.data.gameId);
-            await this._notifyUsers(this._getPlayers(conectedUsers), event.body.data.action, event.body.data.notification);
+            await this._notifyUsers(Utils.getPlayers(conectedUsers), event.body.data.action, event.body.data.notification);
         } catch (error) {
             console.log("ConneconnectSessionct FINAL ERROR", error);
             return ERRORS[error];
         }
         return { statusCode: 200, body: "OK NotifyPlayers" };
-    }
-
-
-    private _generateGameId(): string {
-        return Math.random().toString(36).substring(2, 8) + Math.random().toString(36).substring(2, 8);
-    }
-
-    private _getHost(users: UserSession[]) {
-        return users.find((item) => item.host)
-    }
-    private _getPlayers(users: UserSession[]) {
-        return users.filter((item) => !item.host)
     }
 
     private async _notifyUser(socketId: string, action: NotifyActionEnum, notification: any) {
@@ -161,7 +154,7 @@ export class SocketService implements ISocketService {
     }
 
     private async _getUsersInGame(gameId: string): Promise<UserSession[]> {
-        const conectedUsers: UserSession[] = await this._dynamo.query<UserSession>(this._queryByGameId(gameId));
+        const conectedUsers: UserSession[] = await this._dynamo.query<UserSession>(Utils.queryByGameId(gameId));
         console.log("_getUsersInGame", conectedUsers);
         return conectedUsers;
     }
@@ -176,20 +169,6 @@ export class SocketService implements ISocketService {
             await this._socket.sendMessage<any>(user.socketId, notify);
         }
         return true;
-    }
-
-    private _queryByGameId(gameId: string): DocumentClient.QueryInput {
-        return {
-            ExpressionAttributeNames: {
-                "#gameId": "gameId"
-            },
-            ExpressionAttributeValues: {
-                ":gameId": gameId,
-            },
-            IndexName: DynamoIndexEnum.GAME_ID,
-            TableName: DynamoTableEnum.USER_SESSION,
-            KeyConditionExpression: "#gameId = :gameId",
-        };
     }
 }
 

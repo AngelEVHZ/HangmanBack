@@ -36,7 +36,8 @@ describe("SocketService", () => {
                 gameId: "gameId",
                 nickName: "nickName",
                 host: false,
-                conected: 0
+                conected: 0,
+                playerId:"id",
             }
         );
         dynamoQueryStub = box.stub().returns([
@@ -45,14 +46,16 @@ describe("SocketService", () => {
                 gameId: "gameId",
                 nickName: "nickName",
                 host: false,
-                conected: 0
+                conected: 0,
+                playerId:"id",
             },
             {
                 socketId: "socketId2",
                 gameId: "gameId",
                 nickName: "nickName2",
                 host: true,
-                conected: 0
+                conected: 0,
+                playerId:"id",
             }
         ]);
         event = Mock.of<IAPIGatewayWebSocketEvent<SocketAction<CreateSessionRequest>>>({
@@ -107,6 +110,7 @@ describe("SocketService", () => {
         expect(dynamoPutStub).to.have.been.calledOnce;
         expect(dynamoQueryStub).to.have.been.calledOnce;
         expect(socketNotifyStub).to.have.been.callCount(3);
+        console.log(socketNotifyStub.args[0][1]);
     });
 
 
