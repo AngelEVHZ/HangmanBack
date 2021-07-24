@@ -19,6 +19,7 @@ describe("SocketService", () => {
     let event: IAPIGatewayWebSocketEvent<SocketAction<CreateSessionRequest>>;
     let dynamoPutStub: SinonStub;
     let socketNotifyStub: SinonStub;
+    let socketCloseStub: SinonStub;
     let dynamoQueryStub: SinonStub;
     let dynamoDeleteStub: SinonStub;
     let dynamoGetStub: SinonStub;
@@ -29,6 +30,7 @@ describe("SocketService", () => {
         dynamoPutStub = box.stub().returns(true);
         dynamoDeleteStub = box.stub().returns(true);
         socketNotifyStub = box.stub().returns(true);
+        socketCloseStub = box.stub().returns(true);
 
         dynamoGetStub = box.stub().returns(
             {
@@ -113,6 +115,62 @@ describe("SocketService", () => {
         console.log(socketNotifyStub.args[0][1]);
     });
 
+    it("Test Join connectSession, session is Full, succes", async () => {
+        process.env.CREATE_SESSION = "table-arn-session"
+        dynamoQueryStub = box.stub().returns([
+            {
+                socketId: "socketId",
+                gameId: "gameId",
+                nickName: "nickName",
+                host: false,
+                conected: 0,
+                playerId:"id",
+            },
+            {
+                socketId: "socketId2",
+                gameId: "gameId",
+                nickName: "nickName2",
+                host: true,
+                conected: 0,
+                playerId:"id",
+            },
+            {
+                socketId: "socketId2",
+                gameId: "gameId",
+                nickName: "nickName2",
+                host: false,
+                conected: 0,
+                playerId:"id",
+            },
+            {
+                socketId: "socketId2",
+                gameId: "gameId",
+                nickName: "nickName2",
+                host: false,
+                conected: 0,
+                playerId:"id",
+            }
+        ]);
+        CONTAINER.rebind(IDENTIFIERS.DynamoGateway).toConstantValue(Mock.of<DynamoGateway>({
+            put: dynamoPutStub,
+            query: dynamoQueryStub,
+        }));
+        CONTAINER.rebind(IDENTIFIERS.SocketGateway).toConstantValue(Mock.of<SocketGateway>({
+            sendMessage: socketNotifyStub,
+            close: socketCloseStub,
+        }));
+        service = CONTAINER.get<ISocketService>(IDENTIFIERS.SocketService);
+        event.body.data.gameId = "111111111111";
+        const response = await service.ConneconnectSession(event);
+        console.log("FINAL RESPONSE", response);
+        expect(response.statusCode).to.be.equal(400);
+        expect(response.body).to.be.equal("The session is full");
+        expect(dynamoPutStub).not.to.have.been.calledOnce;
+        expect(dynamoQueryStub).to.have.been.calledOnce;
+        expect(socketNotifyStub).not.to.have.been.called;
+        expect(socketCloseStub).to.have.been.calledOnce;
+       
+    });
 
     it("Test connect, succes", async () => {
         const event = Mock.of<IAPIGatewayWebSocketEvent>({

@@ -13,5 +13,6 @@ export interface UserSessionResponse {
     nickName: string;
     host: boolean;
     playerId: string;
+    owner: boolean;
 }
   

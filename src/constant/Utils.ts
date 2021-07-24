@@ -32,16 +32,17 @@ export class Utils
         };
     }
 
-    static parseArrayToUserResponse(users: UserSession[]): UserSessionResponse[]{
-        return users.map( (item) => Utils.parseToUserResponse(item));
+    static parseArrayToUserResponse(users: UserSession[], playerId: string): UserSessionResponse[]{
+        return users.map( (item) => Utils.parseToUserResponse(item, item.playerId == playerId));
     }
 
-    static parseToUserResponse(user: UserSession): UserSessionResponse{
+    static parseToUserResponse(user: UserSession, owner: boolean): UserSessionResponse{
         return {
             gameId: user.gameId,
             nickName: user.nickName,
             host: user.host,
             playerId: user.playerId,
+            owner,
         } as UserSessionResponse;
     }
 }

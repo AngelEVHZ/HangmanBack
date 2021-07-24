@@ -55,11 +55,11 @@ export class SocketService implements ISocketService {
 
     public async ConneconnectSession(event: IAPIGatewayWebSocketEvent<SocketAction<CreateSessionRequest>>): Promise<GenericResponse> {
         console.log("ON ConneconnectSessionct", event);
+        const socketId = event.requestContext.connectionId;
         try {
-            if (!get(event, "requestContext.connectionId")) throw ErrorEnum.E001;
-
+            if (!socketId) throw ErrorEnum.E001;
             const userSession: UserSession = {
-                socketId: event.requestContext.connectionId,
+                socketId,
                 gameId: get(event, "body.data.gameId"),
                 nickName: event.body.data.nickName,
                 host: false,
@@ -72,7 +72,7 @@ export class SocketService implements ISocketService {
                 userSession.host = true;
                 const dynamoResponse = await this._dynamo.put(userSession, DynamoTableEnum.USER_SESSION);
                 if (!dynamoResponse) throw ErrorEnum.E003;
-                const notified = await this._notifyUser(userSession.socketId, NotifyActionEnum.SESSION_CREATED, Utils.parseArrayToUserResponse([userSession]))
+                const notified = await this._notifyUser(userSession.socketId, NotifyActionEnum.SESSION_CREATED, Utils.parseArrayToUserResponse([userSession], userSession.playerId))
                 if (!notified) throw ErrorEnum.E003;
             } else {
                 if (userSession.gameId.length != CODE_SIZE) {
@@ -88,11 +88,12 @@ export class SocketService implements ISocketService {
                 conectedUsers.push(userSession);
                 const notified = await this._notifyUsers(conectedUsers,
                     NotifyActionEnum.USER_JOIN,
-                    Utils.parseArrayToUserResponse(conectedUsers));
+                    Utils.parseArrayToUserResponse(conectedUsers, userSession.playerId));
                 if (!notified) throw ErrorEnum.E003;
             }
         } catch (error) {
             console.log("ConneconnectSessionct FINAL ERROR", error);
+            await this._socket.close(socketId);
             return ERRORS[error];
         }
         return { statusCode: 200, body: "success" };
@@ -104,7 +105,6 @@ export class SocketService implements ISocketService {
         }
         return true;
     }
-
 
     public async NotifyAll(event: IAPIGatewayWebSocketEvent<SocketAction<NotifyAll>>): Promise<GenericResponse> {
         console.log("ON NotifyAll", event);

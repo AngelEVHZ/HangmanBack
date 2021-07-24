@@ -1,7 +1,7 @@
 import { injectable } from "inversify";
 import "reflect-metadata";
 import { ISocketGateway } from "../infraestructure/ISocketGateway";
-import { PostToConnectionRequest } from "aws-sdk/clients/apigatewaymanagementapi";
+import { PostToConnectionRequest, DeleteConnectionRequest } from "aws-sdk/clients/apigatewaymanagementapi";
 import { ApiGatewayManagementApi } from "aws-sdk";
 
 @injectable()
@@ -16,6 +16,19 @@ export class SocketGateway implements ISocketGateway {
                 endpoint: process.env.SOCKET_ENDPOINT,
             }
         );
+    }
+
+    public async close(connectionId: string): Promise<boolean> {
+        const params: DeleteConnectionRequest = {
+            ConnectionId: connectionId
+        }
+        try {
+            await this._client.deleteConnection(params).promise();
+            return true;
+        } catch (error) {
+            console.log("SocketGateway Error", error);
+        }
+        return false;
     }
 
     public async sendMessage<T>(connectionId: string, event: T): Promise<boolean> {
