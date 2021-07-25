@@ -10,7 +10,6 @@ import { SocketActionEnum } from "constant/SocketActionEnum";
 import { DynamoGateway } from "gateway/DynamoGateway";
 import { SocketGateway } from "gateway/SocketGateway";
 import * as sinonChai from "sinon-chai";
-import { NotifyActionEnum } from "constant/NotifyActionEnum";
 use(sinonChai)
 
 describe("SocketService", () => {
@@ -190,7 +189,6 @@ describe("SocketService", () => {
                 data: {
                     gameId: "111111111111",
                     notification: {},
-                    action: NotifyActionEnum.NOTIFY_ALL,
                 }
             }
         });
