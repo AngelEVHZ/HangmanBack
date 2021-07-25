@@ -1,4 +1,3 @@
-import { NotifyActionEnum } from "../constant/NotifyActionEnum";
 import { SocketActionType } from "../constant/SocketActionEnum";
 
 export interface SocketAction<T> {
@@ -13,13 +12,12 @@ export interface CreateSessionRequest {
 }
 
 export interface NotifyAll {
+    excludeOwner?: boolean;
     gameId: string;
     notification: any;
-    action: NotifyActionEnum;
 }
 
 export interface NotifyHost {
     socketId: string;
     notification: any;
-    action: NotifyActionEnum;
 }

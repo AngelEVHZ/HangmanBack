@@ -209,6 +209,51 @@ describe("SocketService", () => {
         expect(socketNotifyStub).to.have.been.callCount(2);
     });
 
+    it("Test NotifyAll, Exclude owner succes", async () => {
+        const event = Mock.of<IAPIGatewayWebSocketEvent<SocketAction<NotifyAll>>>({
+            requestContext: { connectionId: "conection-id" },
+            body: {
+                action: SocketActionEnum.NOTIFY_ALL,
+                data: {
+                    excludeOwner: true,
+                    gameId: "111111111111",
+                    notification: {},
+                }
+            }
+        });
+        dynamoQueryStub = box.stub().returns([
+            {
+                socketId: "conection-id",
+                gameId: "gameId",
+                nickName: "nickName",
+                host: false,
+                conected: 0,
+                playerId:"id",
+            },
+            {
+                socketId: "socketId2",
+                gameId: "gameId",
+                nickName: "nickName2",
+                host: true,
+                conected: 0,
+                playerId:"id",
+            }
+        ]);
+        CONTAINER.rebind(IDENTIFIERS.DynamoGateway).toConstantValue(Mock.of<DynamoGateway>({
+            query: dynamoQueryStub,
+        }));
+        CONTAINER.rebind(IDENTIFIERS.SocketGateway).toConstantValue(Mock.of<SocketGateway>({
+            sendMessage: socketNotifyStub,
+        }));
+
+        service = CONTAINER.get<ISocketService>(IDENTIFIERS.SocketService);
+        const response = await service.NotifyAll(event);
+        console.log("FINAL RESPONSE", response);
+        expect(response.body).to.be.equal("OK NotifyAll");
+        expect(dynamoQueryStub).to.have.been.calledOnce;
+        expect(socketNotifyStub).to.have.been.callCount(1);
+    });
+
     it("Test NotifyPlayers, succes", async () => {
         const event = Mock.of<IAPIGatewayWebSocketEvent<SocketAction<NotifyAll>>>({
             requestContext: { connectionId: "conection-id" },
@@ -217,7 +262,6 @@ describe("SocketService", () => {
                 data: {
                     gameId: "111111111111",
                     notification: {},
-                    action: NotifyActionEnum.NOTIFY_PLAYERS,
                 }
             }
         });
@@ -244,7 +288,6 @@ describe("SocketService", () => {
                 data: {
                     socketId: "111111111111",
                     notification: {},
-                    action: NotifyActionEnum.NOTIFY_HOST,
                 }
             }
         });

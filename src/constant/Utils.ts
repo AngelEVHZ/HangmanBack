@@ -18,6 +18,11 @@ export class Utils
         return users.filter((item) => !item.host)
     }
 
+    static getPlayersExcludeOwner(users: UserSession[], sockerId: string) {
+        return users.filter((item) => item.socketId != sockerId)
+    }
+
+
     static queryByGameId(gameId: string): DocumentClient.QueryInput {
         return {
             ExpressionAttributeNames: {

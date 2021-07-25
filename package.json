@@ -6,7 +6,7 @@
   "scripts": {
     "test": "npm run test:unit",
     "test:unit": "mocha -r ts-node/register src/**/*.spec.ts",
-    "coverage":"npx nyc npm run test"
+    "coverage": "npx nyc npm run test"
   },
   "engines": {
     "node": ">=14.15.0"

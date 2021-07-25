@@ -110,8 +110,11 @@ export class SocketService implements ISocketService {
         console.log("ON NotifyAll", event);
         try {
             this._validateGameId(get(event, "body.data.gameId", ""));
-            const conectedUsers: UserSession[] = await this._getUsersInGame(event.body.data.gameId);
-            await this._notifyUsers(conectedUsers, event.body.data.action, event.body.data.notification);
+            let conectedUsers: UserSession[] = await this._getUsersInGame(event.body.data.gameId);
+            if (event.body.data.excludeOwner) {
+                conectedUsers = Utils.getPlayersExcludeOwner(conectedUsers, event.requestContext.connectionId);
+            }
+            await this._notifyUsers(conectedUsers, NotifyActionEnum.NOTIFY_ALL, event.body.data.notification);
         } catch (error) {
             console.log("ConneconnectSessionct FINAL ERROR", error);
             return ERRORS[error];
@@ -124,7 +127,7 @@ export class SocketService implements ISocketService {
         try {
             const data = event.body;
             if (!get(data, "data.socketId")) throw ErrorEnum.E001;
-            await this._notifyUser(data.data.socketId, data.data.action, data.data.notification);
+            await this._notifyUser(data.data.socketId, NotifyActionEnum.NOTIFY_HOST, data.data.notification);
         } catch (error) {
             console.log("ConneconnectSessionct FINAL ERROR", error);
             return ERRORS[error];
@@ -137,7 +140,7 @@ export class SocketService implements ISocketService {
         try {
             this._validateGameId(get(event, "body.data.gameId", ""));
             const conectedUsers: UserSession[] = await this._getUsersInGame(event.body.data.gameId);
-            await this._notifyUsers(Utils.getPlayers(conectedUsers), event.body.data.action, event.body.data.notification);
+            await this._notifyUsers(Utils.getPlayers(conectedUsers), NotifyActionEnum.NOTIFY_PLAYERS, event.body.data.notification);
         } catch (error) {
             console.log("ConneconnectSessionct FINAL ERROR", error);
             return ERRORS[error];
