@@ -10,6 +10,7 @@ import { SocketActionEnum } from "constant/SocketActionEnum";
 import { DynamoGateway } from "gateway/DynamoGateway";
 import { SocketGateway } from "gateway/SocketGateway";
 import * as sinonChai from "sinon-chai";
+import { IDynamoGateway } from "infraestructure/IDynamoGateway";
 use(sinonChai)
 
 describe("SocketService", () => {
@@ -22,12 +23,14 @@ describe("SocketService", () => {
     let dynamoQueryStub: SinonStub;
     let dynamoDeleteStub: SinonStub;
     let dynamoGetStub: SinonStub;
+    let dynamoUpdateStub: SinonStub;
 
     beforeEach(() => {
         box = createSandbox();
         CONTAINER.snapshot();
         dynamoPutStub = box.stub().returns(true);
         dynamoDeleteStub = box.stub().returns(true);
+        dynamoUpdateStub = box.stub().returns(true);
         socketNotifyStub = box.stub().returns(true);
         socketCloseStub = box.stub().returns(true);
 
@@ -322,4 +325,74 @@ describe("SocketService", () => {
         expect(socketNotifyStub).to.have.been.callCount(2);
     });
 
+    it("Test disconnect host, should change host, succes", async () => {
+        dynamoGetStub = box.stub().returns(
+            {
+                socketId: "socketId",
+                gameId: "gameId",
+                nickName: "nickName",
+                host: true,
+                conected: 0,
+                playerId:"id",
+            }
+        );
+        CONTAINER.rebind(IDENTIFIERS.DynamoGateway).toConstantValue(Mock.of<IDynamoGateway>({
+            delete: dynamoDeleteStub,
+            getItem: dynamoGetStub,
+            query: dynamoQueryStub,
+            updateUserHost: dynamoUpdateStub
+            
+        }));
+        CONTAINER.rebind(IDENTIFIERS.SocketGateway).toConstantValue(Mock.of<SocketGateway>({
+            sendMessage: socketNotifyStub,
+        }));
+        const event = Mock.of<IAPIGatewayWebSocketEvent>({
+            requestContext: { connectionId: "conection-id" },
+        });
+        service = CONTAINER.get<ISocketService>(IDENTIFIERS.SocketService);
+        const response = await service.Disconnect(event);
+        console.log("FINAL RESPONSE", response);
+        expect(response.body).to.be.equal("OK Disconnect");
+        expect(dynamoDeleteStub).to.have.been.calledOnce;
+        expect(dynamoGetStub).to.have.been.calledOnce;
+        expect(dynamoQueryStub).to.have.been.calledOnce;
+        expect(dynamoUpdateStub).to.have.been.calledOnce;
+        expect(socketNotifyStub).to.have.been.callCount(2);
+    });
+
+    it("Test disconnect host with no more users, should not change host, succes", async () => {
+        dynamoGetStub = box.stub().returns(
+            {
+                socketId: "socketId",
+                gameId: "gameId",
+                nickName: "nickName",
+                host: true,
+                conected: 0,
+                playerId:"id",
+            }
+        );
+        dynamoQueryStub = box.stub().returns([]);
+        CONTAINER.rebind(IDENTIFIERS.DynamoGateway).toConstantValue(Mock.of<IDynamoGateway>({
+            delete: dynamoDeleteStub,
+            getItem: dynamoGetStub,
+            query: dynamoQueryStub,
+            updateUserHost: dynamoUpdateStub
+            
+        }));
+        CONTAINER.rebind(IDENTIFIERS.SocketGateway).toConstantValue(Mock.of<SocketGateway>({
+            sendMessage: socketNotifyStub,
+        }));
+        const event = Mock.of<IAPIGatewayWebSocketEvent>({
+            requestContext: { connectionId: "conection-id" },
+        });
+        service = CONTAINER.get<ISocketService>(IDENTIFIERS.SocketService);
+        const response = await service.Disconnect(event);
+        console.log("FINAL RESPONSE", response);
+        expect(response.body).to.be.equal("OK Disconnect");
+        expect(dynamoDeleteStub).to.have.been.calledOnce;
+        expect(dynamoGetStub).to.have.been.calledOnce;
+        expect(dynamoQueryStub).to.have.been.calledOnce;
+        expect(dynamoUpdateStub).not.to.have.been.calledOnce;
+        expect(socketNotifyStub).to.have.been.callCount(0);
+    });
 });

@@ -5,7 +5,7 @@ import { ISocketService } from "../infraestructure/ISocketService";
 import { IDynamoGateway } from "../infraestructure/IDynamoGateway";
 import IDENTIFIERS from "../constant/Identifiers";
 import { DynamoGateway } from "../gateway/DynamoGateway";
-import { UserSession } from "../types/UserSession";
+import { UserDisconected, UserSession } from "../types/UserSession";
 import { CreateSessionRequest, SocketAction, NotifyAll, NotifyHost } from "../types/SocketAction";
 import { get } from "lodash";
 import { ERRORS, ErrorEnum } from "../constant/ErrorsEnum";
@@ -42,7 +42,22 @@ export class SocketService implements ISocketService {
                 if (userSession) {
                     const response = await this._dynamo.delete(DynamoIndexEnum.SOCKET_ID, socketId, DynamoTableEnum.USER_SESSION);
                     const conectedUsers: UserSession[] = await this._getUsersInGame(userSession.gameId);
-                    await this._notifyUsers(conectedUsers, NotifyActionEnum.USER_DISCONNECTED, conectedUsers);
+                    let action =  NotifyActionEnum.USER_DISCONNECTED;
+                    if (userSession.host && conectedUsers.length > 0) {
+                        const newHost = conectedUsers[0];
+                        newHost.host = true;
+                        action = NotifyActionEnum.HOST_DISCONNECTED;
+                        await this._dynamo.updateUserHost(DynamoIndexEnum.SOCKET_ID, newHost.socketId, DynamoTableEnum.USER_SESSION);
+                    }
+
+                    const userDisconected: UserDisconected = {
+                        nickName: userSession.nickName,
+                        playerId: userSession.playerId,
+                        conectedList: Utils.parseArrayToUserResponse(conectedUsers, userSession.playerId),
+                    };
+
+
+                    await this._notifyUsers(conectedUsers, action, userDisconected);
                     if (!response) throw ErrorEnum.E003;
                 }
             }

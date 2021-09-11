@@ -6,4 +6,5 @@ export interface IDynamoGateway {
     query<T = object>(queryInput: DocumentClient.QueryInput): Promise<T[]>;
     delete(key: string, value: string, table: string): Promise<boolean>;
     getItem<T = object>(key: string, value: string, table: string): Promise<T>;
+    updateUserHost(key: string, value: string, table: string): Promise<boolean>;
 }

@@ -25,8 +25,6 @@ package:
     - "src/handler/*.LICENSE"
 
 functions:
-  hello:
-    handler: src/handler/HelloHandler.main
   connectSession:
     handler: src/handler/ConnectSessionHandler.main
   connect:

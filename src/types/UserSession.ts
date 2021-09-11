@@ -15,4 +15,10 @@ export interface UserSessionResponse {
     playerId: string;
     owner: boolean;
 }
+
+export interface UserDisconected {
+    nickName: string;
+    playerId: string;
+    conectedList: UserSessionResponse[];
+}
   

@@ -71,12 +71,6 @@
         }
       }
     },
-    "HelloLogGroup": {
-      "Type": "AWS::Logs::LogGroup",
-      "Properties": {
-        "LogGroupName": "/aws/lambda/hangman-dev-hello"
-      }
-    },
     "ConnectSessionLogGroup": {
       "Type": "AWS::Logs::LogGroup",
       "Properties": {
@@ -87,6 +81,30 @@
       "Type": "AWS::Logs::LogGroup",
       "Properties": {
         "LogGroupName": "/aws/lambda/hangman-dev-connect"
+      }
+    },
+    "NotifyAllLogGroup": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": "/aws/lambda/hangman-dev-notifyAll"
+      }
+    },
+    "NotifyHostLogGroup": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": "/aws/lambda/hangman-dev-notifyHost"
+      }
+    },
+    "NotifyPlayersLogGroup": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": "/aws/lambda/hangman-dev-notifyPlayers"
+      }
+    },
+    "DisconnectLogGroup": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": "/aws/lambda/hangman-dev-disconnect"
       }
     },
     "IamRoleLambdaExecution": {
@@ -166,36 +184,6 @@
         }
       }
     },
-    "HelloLambdaFunction": {
-      "Type": "AWS::Lambda::Function",
-      "Properties": {
-        "Code": {
-          "S3Bucket": {
-            "Ref": "ServerlessDeploymentBucket"
-          },
-          "S3Key": "serverless/hangman/dev/1626029546079-2021-07-11T18:52:26.079Z/hello.zip"
-        },
-        "Handler": "src/handler/HelloHandler.main",
-        "Runtime": "nodejs12.x",
-        "FunctionName": "hangman-dev-hello",
-        "MemorySize": 1024,
-        "Timeout": 6,
-        "Environment": {
-          "Variables": {
-            "USRV_STAGE": "dev"
-          }
-        },
-        "Role": {
-          "Fn::GetAtt": [
-            "IamRoleLambdaExecution",
-            "Arn"
-          ]
-        }
-      },
-      "DependsOn": [
-        "HelloLogGroup"
-      ]
-    },
     "ConnectSessionLambdaFunction": {
       "Type": "AWS::Lambda::Function",
       "Properties": {
@@ -203,7 +191,7 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/hangman/dev/1626029546079-2021-07-11T18:52:26.079Z/connectSession.zip"
+          "S3Key": "serverless/hangman/dev/1628376482363-2021-08-07T22:48:02.363Z/connectSession.zip"
         },
         "Handler": "src/handler/ConnectSessionHandler.main",
         "Runtime": "nodejs12.x",
@@ -233,7 +221,7 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/hangman/dev/1626029546079-2021-07-11T18:52:26.079Z/connect.zip"
+          "S3Key": "serverless/hangman/dev/1628376482363-2021-08-07T22:48:02.363Z/connect.zip"
         },
         "Handler": "src/handler/ConnectHandler.main",
         "Runtime": "nodejs12.x",
@@ -256,34 +244,184 @@
         "ConnectLogGroup"
       ]
     },
-    "HelloLambdaVersionby5PQArAvexwz2cNn2Iatq1lDrdDJ0TlVDwQ9eOwbk": {
-      "Type": "AWS::Lambda::Version",
-      "DeletionPolicy": "Retain",
+    "NotifyAllLambdaFunction": {
+      "Type": "AWS::Lambda::Function",
       "Properties": {
-        "FunctionName": {
-          "Ref": "HelloLambdaFunction"
+        "Code": {
+          "S3Bucket": {
+            "Ref": "ServerlessDeploymentBucket"
+          },
+          "S3Key": "serverless/hangman/dev/1628376482363-2021-08-07T22:48:02.363Z/notifyAll.zip"
         },
-        "CodeSha256": "5Ao6PsT5E0j8/tRdNcdmvVArsKwe9pV2tckzCxtJWSo="
-      }
+        "Handler": "src/handler/NotifyAllHandler.main",
+        "Runtime": "nodejs12.x",
+        "FunctionName": "hangman-dev-notifyAll",
+        "MemorySize": 1024,
+        "Timeout": 6,
+        "Environment": {
+          "Variables": {
+            "USRV_STAGE": "dev"
+          }
+        },
+        "Role": {
+          "Fn::GetAtt": [
+            "IamRoleLambdaExecution",
+            "Arn"
+          ]
+        }
+      },
+      "DependsOn": [
+        "NotifyAllLogGroup"
+      ]
     },
-    "ConnectLambdaVersionmTxQT0vW2UgLYNwqfQaFahD0UzxFZmKgceFx5HLyqB0": {
-      "Type": "AWS::Lambda::Version",
-      "DeletionPolicy": "Retain",
+    "NotifyHostLambdaFunction": {
+      "Type": "AWS::Lambda::Function",
       "Properties": {
-        "FunctionName": {
-          "Ref": "ConnectLambdaFunction"
+        "Code": {
+          "S3Bucket": {
+            "Ref": "ServerlessDeploymentBucket"
+          },
+          "S3Key": "serverless/hangman/dev/1628376482363-2021-08-07T22:48:02.363Z/notifyHost.zip"
         },
-        "CodeSha256": "ijN70QIKnbXmh9mJSSYmIoXc6gc0VJyePYAUdLQBwn4="
-      }
+        "Handler": "src/handler/NotifyHostHandler.main",
+        "Runtime": "nodejs12.x",
+        "FunctionName": "hangman-dev-notifyHost",
+        "MemorySize": 1024,
+        "Timeout": 6,
+        "Environment": {
+          "Variables": {
+            "USRV_STAGE": "dev"
+          }
+        },
+        "Role": {
+          "Fn::GetAtt": [
+            "IamRoleLambdaExecution",
+            "Arn"
+          ]
+        }
+      },
+      "DependsOn": [
+        "NotifyHostLogGroup"
+      ]
     },
-    "ConnectSessionLambdaVersion3gy4oHwiZRx5qjPaLa7g5hXu74uVEuX8GJEAUaEgNQ": {
+    "NotifyPlayersLambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Ref": "ServerlessDeploymentBucket"
+          },
+          "S3Key": "serverless/hangman/dev/1628376482363-2021-08-07T22:48:02.363Z/notifyPlayers.zip"
+        },
+        "Handler": "src/handler/NotifyPlayersHandler.main",
+        "Runtime": "nodejs12.x",
+        "FunctionName": "hangman-dev-notifyPlayers",
+        "MemorySize": 1024,
+        "Timeout": 6,
+        "Environment": {
+          "Variables": {
+            "USRV_STAGE": "dev"
+          }
+        },
+        "Role": {
+          "Fn::GetAtt": [
+            "IamRoleLambdaExecution",
+            "Arn"
+          ]
+        }
+      },
+      "DependsOn": [
+        "NotifyPlayersLogGroup"
+      ]
+    },
+    "DisconnectLambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Ref": "ServerlessDeploymentBucket"
+          },
+          "S3Key": "serverless/hangman/dev/1628376482363-2021-08-07T22:48:02.363Z/disconnect.zip"
+        },
+        "Handler": "src/handler/DisconnectHandler.main",
+        "Runtime": "nodejs12.x",
+        "FunctionName": "hangman-dev-disconnect",
+        "MemorySize": 1024,
+        "Timeout": 6,
+        "Environment": {
+          "Variables": {
+            "USRV_STAGE": "dev"
+          }
+        },
+        "Role": {
+          "Fn::GetAtt": [
+            "IamRoleLambdaExecution",
+            "Arn"
+          ]
+        }
+      },
+      "DependsOn": [
+        "DisconnectLogGroup"
+      ]
+    },
+    "ConnectSessionLambdaVersioniaEWPsFbZ0nLPxuvEwL9YNfb46hbwH4uEJgaQ4lHM": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "ConnectSessionLambdaFunction"
         },
-        "CodeSha256": "WmvtUzbSdGv1dNnqhWTBRAHEQvGcKWwaC6szEmstw/Y="
+        "CodeSha256": "ezqnhkFLtN0OaI8G0io4fHVRySw0c1ZKDdHn/WUhQc0="
+      }
+    },
+    "NotifyPlayersLambdaVersionmQKpCUVz8a1kxX1ukn2gzTApdEI62sheebAjIgKK8": {
+      "Type": "AWS::Lambda::Version",
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "NotifyPlayersLambdaFunction"
+        },
+        "CodeSha256": "PthT0wjqn00aNZguntnptBXE9KZk62ITTFw522OIMjE="
+      }
+    },
+    "ConnectLambdaVersionbnwzPUuhZ71phAIhwD7DpQ1RFQ0sHS858F8tMTT4QAs": {
+      "Type": "AWS::Lambda::Version",
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "ConnectLambdaFunction"
+        },
+        "CodeSha256": "1eNl+4894YVaAkU88/BhPZUPy2h6VGabHoS5Ni+m6MM="
+      }
+    },
+    "NotifyAllLambdaVersionTtlIAy3QDNwZBeN5JilFk8sQymHedScCwOOvUBcSHI": {
+      "Type": "AWS::Lambda::Version",
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "NotifyAllLambdaFunction"
+        },
+        "CodeSha256": "+n4cSvDSCLCHysn8Me09eNMxEh38qTKor6mE+G+l9Vw="
+      }
+    },
+    "DisconnectLambdaVersionFwu6NmGHueAURrqQ9aqsY26lucczXP8oOwHiFSiV2Q": {
+      "Type": "AWS::Lambda::Version",
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "DisconnectLambdaFunction"
+        },
+        "CodeSha256": "dUZgita0GNtdJ3+gwTe6x+vKtdG6fo4Cegv4UQIkruA="
+      }
+    },
+    "NotifyHostLambdaVersionJu8IFAYtXYRWU4u5V2dBn3vK1mOng1IJYTSwnA": {
+      "Type": "AWS::Lambda::Version",
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "NotifyHostLambdaFunction"
+        },
+        "CodeSha256": "BdR/68lza9TQALwi5cMEFDf6amDnFXcGHgelbKCQr0A="
       }
     }
   },
@@ -296,31 +434,58 @@
         "Name": "sls-hangman-dev-ServerlessDeploymentBucketName"
       }
     },
-    "HelloLambdaFunctionQualifiedArn": {
+    "ConnectSessionLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "HelloLambdaVersionby5PQArAvexwz2cNn2Iatq1lDrdDJ0TlVDwQ9eOwbk"
+        "Ref": "ConnectSessionLambdaVersioniaEWPsFbZ0nLPxuvEwL9YNfb46hbwH4uEJgaQ4lHM"
       },
       "Export": {
-        "Name": "sls-hangman-dev-HelloLambdaFunctionQualifiedArn"
+        "Name": "sls-hangman-dev-ConnectSessionLambdaFunctionQualifiedArn"
+      }
+    },
+    "NotifyPlayersLambdaFunctionQualifiedArn": {
+      "Description": "Current Lambda function version",
+      "Value": {
+        "Ref": "NotifyPlayersLambdaVersionmQKpCUVz8a1kxX1ukn2gzTApdEI62sheebAjIgKK8"
+      },
+      "Export": {
+        "Name": "sls-hangman-dev-NotifyPlayersLambdaFunctionQualifiedArn"
       }
     },
     "ConnectLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "ConnectLambdaVersionmTxQT0vW2UgLYNwqfQaFahD0UzxFZmKgceFx5HLyqB0"
+        "Ref": "ConnectLambdaVersionbnwzPUuhZ71phAIhwD7DpQ1RFQ0sHS858F8tMTT4QAs"
       },
       "Export": {
         "Name": "sls-hangman-dev-ConnectLambdaFunctionQualifiedArn"
       }
     },
-    "ConnectSessionLambdaFunctionQualifiedArn": {
+    "NotifyAllLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "ConnectSessionLambdaVersion3gy4oHwiZRx5qjPaLa7g5hXu74uVEuX8GJEAUaEgNQ"
+        "Ref": "NotifyAllLambdaVersionTtlIAy3QDNwZBeN5JilFk8sQymHedScCwOOvUBcSHI"
       },
       "Export": {
-        "Name": "sls-hangman-dev-ConnectSessionLambdaFunctionQualifiedArn"
+        "Name": "sls-hangman-dev-NotifyAllLambdaFunctionQualifiedArn"
+      }
+    },
+    "DisconnectLambdaFunctionQualifiedArn": {
+      "Description": "Current Lambda function version",
+      "Value": {
+        "Ref": "DisconnectLambdaVersionFwu6NmGHueAURrqQ9aqsY26lucczXP8oOwHiFSiV2Q"
+      },
+      "Export": {
+        "Name": "sls-hangman-dev-DisconnectLambdaFunctionQualifiedArn"
+      }
+    },
+    "NotifyHostLambdaFunctionQualifiedArn": {
+      "Description": "Current Lambda function version",
+      "Value": {
+        "Ref": "NotifyHostLambdaVersionJu8IFAYtXYRWU4u5V2dBn3vK1mOng1IJYTSwnA"
+      },
+      "Export": {
+        "Name": "sls-hangman-dev-NotifyHostLambdaFunctionQualifiedArn"
       }
     }
   }

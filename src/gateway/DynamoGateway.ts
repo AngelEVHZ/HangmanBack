@@ -1,7 +1,7 @@
 import { inject, injectable } from "inversify";
 import "reflect-metadata";
 import { IDynamoGateway } from "../infraestructure/IDynamoGateway";
-import { DocumentClient, PutItemInput, PutItemInputAttributeMap} from "aws-sdk/clients/dynamodb";
+import { DocumentClient, PutItemInput, PutItemInputAttributeMap } from "aws-sdk/clients/dynamodb";
 import IDENTIFIERS from "../constant/Identifiers";
 
 
@@ -46,6 +46,31 @@ export class DynamoGateway implements IDynamoGateway {
             console.log("DynamoGateway ERROR", error);
         }
         return null;
+    }
+
+    public async updateUserHost(key: string, value: string, table: string): Promise<boolean> {
+        console.log("DYNAMO UPDATEITEM", key, value, table);
+        const params: DocumentClient.UpdateItemInput = {
+            TableName: table,
+            Key: {
+                [key]: value
+            },
+            ExpressionAttributeValues: {
+                ":host": true
+            },
+            ExpressionAttributeNames: {
+                "#host": "host"
+            },
+            UpdateExpression: "set #host = :host"
+        }
+        try {
+            const item = await this._client.update(params).promise();
+            console.log("ITEM", item);
+            return true
+        } catch (error) {
+            console.log("DynamoGateway ERROR", error);
+        }
+        return false;
     }
 
     public async put(data: object, table: string, condition?: string): Promise<boolean> {
